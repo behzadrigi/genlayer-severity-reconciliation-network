@@ -338,6 +338,8 @@ class Recon:
     reconciler: str
     sources_json: str
     digests_json: str
+    anchor_digests_json: str
+    anchor_json: str
     buckets_json: str
     methods_json: str
     strengths_json: str
@@ -393,10 +395,7 @@ class SeverityReconciler(gl.Contract):
             for u in sources:
                 norms.append(fetch_norm(u))
             for i in range(len(norms)):
-                d = sha_hex(norms[i])
-                if d != digests[i]:
-                    raise Exception("SOURCE_CHANGED_SINCE_PARSE")
-                ds.append(d)
+                ds.append(sha_hex(norms[i]))
             return reconcile_sources(norms, ds, vid)
 
         def validator_fn(leader_result) -> bool:
@@ -415,8 +414,12 @@ class SeverityReconciler(gl.Contract):
         scores = [int(s) for s in res["scores"]]
         reconciled = str(res["reconciled"])
         agreement = str(res["agreement"])
-        if [str(d) for d in res["digests"]] != digests:
-            raise Exception("BINDING_MISMATCH")
+        fresh = [str(d) for d in res["digests"]]
+        if len(fresh) != len(sources):
+            raise Exception("BAD_RESULT")
+        anchor = []
+        for i in range(len(sources)):
+            anchor.append("MATCH" if fresh[i] == digests[i] else "DRIFT")
         if len(buckets) != len(sources) or len(methods) != len(sources):
             raise Exception("BAD_RESULT")
         for b in buckets:
@@ -435,7 +438,9 @@ class SeverityReconciler(gl.Contract):
             vuln_id=str(adv["vuln_id"]),
             reconciler=who,
             sources_json=json.dumps(sources),
-            digests_json=json.dumps(digests),
+            digests_json=json.dumps(fresh),
+            anchor_digests_json=json.dumps(digests),
+            anchor_json=json.dumps(anchor),
             buckets_json=json.dumps(buckets),
             methods_json=json.dumps(methods),
             strengths_json=json.dumps(strengths),
@@ -459,6 +464,8 @@ class SeverityReconciler(gl.Contract):
             "reconciler": r.reconciler,
             "sources": json.loads(r.sources_json),
             "digests": json.loads(r.digests_json),
+            "anchor_digests": json.loads(r.anchor_digests_json),
+            "anchor": json.loads(r.anchor_json),
             "buckets": json.loads(r.buckets_json),
             "methods": json.loads(r.methods_json),
             "strengths": json.loads(r.strengths_json),
