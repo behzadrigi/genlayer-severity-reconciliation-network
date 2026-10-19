@@ -434,6 +434,7 @@ class ChallengeRec:
     outcome: str
     reason: str
     buckets_json: str
+    judged_digests_json: str
 
 
 class ReconciliationChallenge(gl.Contract):
@@ -481,6 +482,7 @@ class ReconciliationChallenge(gl.Contract):
             outcome="",
             reason="",
             buckets_json="[]",
+            judged_digests_json="[]",
         )
         self.challenge_total = u256(int(self.challenge_total) + 1)
 
@@ -544,6 +546,7 @@ class ReconciliationChallenge(gl.Contract):
         ch.outcome = outcome
         ch.reason = reason
         ch.buckets_json = json.dumps(buckets)
+        ch.judged_digests_json = json.dumps([str(x) for x in res["digests"]])
 
     @gl.public.write
     def expire_challenge(self, advisory_id: str):
@@ -584,6 +587,7 @@ class ReconciliationChallenge(gl.Contract):
             "outcome": c.outcome,
             "reason": c.reason,
             "judged_buckets": json.loads(c.buckets_json),
+            "judged_digests": json.loads(c.judged_digests_json),
         }, sort_keys=True)
 
     @gl.public.view
