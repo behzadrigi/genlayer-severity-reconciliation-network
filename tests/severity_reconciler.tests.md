@@ -1,0 +1,18 @@
+# Test cases: SeverityReconciler
+
+Status values: RUN (executed, the result below was observed) or DEFINED (not executed on chain). Results come from the final Studio test report dated 2026-10-21. ACC1 is the registrar and policy owner 1. ACC2 is the challenger and policy owner 2. A row marked v1 ran on the first deployment of that contract, which has the same function as the final file.
+
+Test data: VID = CVE-2021-44228. OSV = https://api.osv.dev/v1/vulns/GHSA-jfh8-c2jp-5v3q. CVEORG = https://cveawg.mitre.org/api/cve/CVE-2021-44228. G_LOW and G_HIGH are two public gists whose text mentions the vulnerability id: G_LOW states a low rating with a CVSS vector, G_HIGH states Severity: High with no vector.
+
+| ID | Deployment | Steps | Expected result | Actual result | Status | Evidence |
+|----|------------|-------|-----------------|---------------|--------|----------|
+| V0 | v2 | time_probe() then get_last_probe() | A unix time above 1700000000 | 1792450318 | RUN | 0x0d7c40633e3a3b8060549e940f30655f098e85163d351451d9618b1fcd3673c5 (https://explorer-studio.genlayer.com/tx/0x0d7c40633e3a3b8060549e940f30655f098e85163d351451d9618b1fcd3673c5) |
+| V9 | v1 | View preview_combine with LOW,CRITICAL / HIGH,CRITICAL / MEDIUM,MEDIUM / MEDIUM,UNCLEAR | CRITICAL SPLIT / CRITICAL ADJACENT / MEDIUM UNANIMOUS / UNRESOLVED UNRESOLVED | All four as expected. Run on the first deployment of the reconciler, which has the same function | RUN | view, or transaction hash not recorded in the report |
+| V1 | v2 | reconcile(5) (sources never parsed) | PARSE_REQUIRED_1 | Reverted with PARSE_REQUIRED_1 | RUN | 0xbd6c6c1c8a171e1e2c476277d5193e86cd4efbf71e4cc39af74b52a04f2b442d (https://explorer-studio.genlayer.com/tx/0xbd6c6c1c8a171e1e2c476277d5193e86cd4efbf71e4cc39af74b52a04f2b442d) |
+| V8 | v2 | reconcile(99) | ADVISORY_NOT_FOUND | Reverted with ADVISORY_NOT_FOUND | RUN | 0x1f0790b0ebf7d29fd1016b33d3fc35115c8039af64e55920668189bba162b037 (https://explorer-studio.genlayer.com/tx/0x1f0790b0ebf7d29fd1016b33d3fc35115c8039af64e55920668189bba162b037) |
+| V2 | v2 | reconcile(1), then get_reconciliation(1) | CRITICAL, UNANIMOUS | Succeeded: CRITICAL, UNANIMOUS, anchor [MATCH, MATCH]. The report calls this the second attempt | RUN | 0x3e301e44f759d7a73ac25d31c973127bc4cf2dfe961abe1250d0448f2893e10f (https://explorer-studio.genlayer.com/tx/0x3e301e44f759d7a73ac25d31c973127bc4cf2dfe961abe1250d0448f2893e10f) |
+| V3 | v2 | reconcile(3) (G_HIGH text source plus OSV) | CRITICAL, ADJACENT | Succeeded: CRITICAL, ADJACENT | RUN | 0xa9e7fe39736105d1912551048433bdb8eda8c4c48c49b411bd61ae7e9ed108f4 (https://explorer-studio.genlayer.com/tx/0xa9e7fe39736105d1912551048433bdb8eda8c4c48c49b411bd61ae7e9ed108f4) |
+| V4 | v2 | reconcile(4) (G_HIGH text source plus CVEORG) | Record the result | Succeeded: CRITICAL, ADJACENT | RUN | 0xafe8682578c3af8e94d21d90b3af473c17074d3b173d75817a720ab151b94525 (https://explorer-studio.genlayer.com/tx/0xafe8682578c3af8e94d21d90b3af473c17074d3b173d75817a720ab151b94525) |
+| V5 | v2 | reconcile(2) (G_LOW, OSV, CVEORG) | CRITICAL, SPLIT | Succeeded: CRITICAL, SPLIT | RUN | 0xa6bdcbb02b45220e38629f5036f5f0524adfbdea8103afc7056c9feefd681ca1 (https://explorer-studio.genlayer.com/tx/0xa6bdcbb02b45220e38629f5036f5f0524adfbdea8103afc7056c9feefd681ca1) |
+| V6 | v2 | reconcile(1) again | ALREADY_RECONCILED | Reverted with ALREADY_RECONCILED | RUN | 0x85c1bd4946161c3a4b9715225ce9646f2a493758727f75482ac25d9ae4b74a1c (https://explorer-studio.genlayer.com/tx/0x85c1bd4946161c3a4b9715225ce9646f2a493758727f75482ac25d9ae4b74a1c) |
+| V7 | v2 | Edit a source after parse, then reconcile | Succeeds with anchor DRIFT on the edited source | Not run on chain. Covered only by the local mock run | DEFINED | none |
