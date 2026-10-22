@@ -330,19 +330,31 @@ def classify_judge(norm: str, vid: str):
     return b, method, quote
 
 
-def quote_supports(bucket: str, quote: str) -> bool:
+def quote_buckets(quote: str) -> list:
     q = normalize_text(quote)
     toks = tokens_of(q)
-    for w in BUCKET_WORDS[bucket]:
-        if w in toks:
-            return True
-    for x in numbers_in(q):
-        if x == 3.0 or x == 3.1 or x == 2.0:
-            continue
-        s10 = int(round(x * 10))
-        if bucket_of_score10(s10) == bucket and s10 > 0:
-            return True
-    return False
+    nums = numbers_in(q)
+    out = []
+    for b in BUCKETS:
+        hit = False
+        for w in BUCKET_WORDS[b]:
+            if w in toks:
+                hit = True
+        if not hit:
+            for x in nums:
+                if x == 3.0 or x == 3.1 or x == 2.0:
+                    continue
+                s10 = int(round(x * 10))
+                if s10 > 0 and bucket_of_score10(s10) == b:
+                    hit = True
+        if hit:
+            out.append(b)
+    return out
+
+
+def quote_supports(bucket: str, quote: str) -> bool:
+    # the quote must support this bucket and no other bucket
+    return quote_buckets(quote) == [bucket]
 
 
 def judge_item_valid(norm: str, vid: str, bucket: str, method: str, quote: str) -> bool:
@@ -355,11 +367,16 @@ def judge_item_valid(norm: str, vid: str, bucket: str, method: str, quote: str) 
     expected = "MODEL_BOUNDED" if len(ranks) >= 2 else "MODEL"
     if method != expected:
         return False
-    if bucket == "UNCLEAR":
-        raw, _q = llm_bucket_judge(norm)
-        return bounded(raw, ranks) == "UNCLEAR"
-    if bucket not in BUCKETS:
+    if bucket != "UNCLEAR" and bucket not in BUCKETS:
         return False
+    # the validator determines the bucket on its own, blind to the leader answer,
+    # and the corrected bucket is only accepted when both determinations are equal
+    own_raw, _own_quote = llm_bucket_judge(norm)
+    own = bounded(own_raw, ranks)
+    if own != bucket:
+        return False
+    if bucket == "UNCLEAR":
+        return True
     if len(ranks) >= 2 and not (ranks[0] <= BUCKETS.index(bucket) <= ranks[-1]):
         return False
     q = normalize_text(quote)
