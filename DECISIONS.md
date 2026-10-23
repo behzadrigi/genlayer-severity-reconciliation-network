@@ -24,7 +24,7 @@ Each entry gives the decision, the reason and the cost.
    Reason: the reconciled bucket is the highest across sources, and the agreement level (UNANIMOUS, ADJACENT, SPLIT) is a first-class output, so a consumer can choose how to treat disagreement. Any unclear or weak source makes the result UNRESOLVED instead of guessing. Cost: one weak source holds up the whole advisory.
 
 8. Four different consensus patterns.
-   Reason: deterministic registry, strict equality for the parser (a pure fetch and compute step, so it must match exactly), a tolerance band for the reconciler (model strength scores are fuzzy, every outcome field is exact), non-comparative verification for the challenge judge (its output is checkable evidence). Cost: more validator code.
+   Reason: deterministic registry, strict equality for the parser (a pure fetch and compute step, so it must match exactly), a tolerance band for the reconciler (model strength scores are fuzzy, every outcome field is exact), comparative determination for the challenge judge (every validator determines the corrected bucket on its own and the leader must match it, with evidence checks on top). Cost: more validator code.
 
 9. Every outcome-bearing field is compared by validators.
    Reason: in the reconciler the digests, buckets, methods, scores, reconciled bucket and agreement must be equal. Only the strength scores of model-read sources have a tolerance of 15, and the minimum strength of 50 affects the outcome through the reconciled result, which is compared exactly. Cost: a rare retry when a score sits at the boundary.
@@ -65,11 +65,15 @@ Each entry gives the decision, the reason and the cost.
 21. Test windows.
     Reason: 600 seconds for the reconciliation window and 300 seconds for the resolution window on Studio, so a manual tester has time for consecutive transactions. Cost: real use needs much longer windows.
 
+22. Validators determine and bind the corrected bucket independently.
+    Reason: the first design only checked that the leader's quote occurs in the page and matches the leader's bucket, so a page that mentions two severities could validate two different buckets, and the corrected bucket decides the final policy action. Each validator now determines the bucket of every source on its own, blind to the leader, and the leader's bucket is accepted only if it equals the validator's. A quote must also support exactly one bucket. Cost: an ambiguous model-read page can fail agreement and need a retry, and a challenge that cannot reach agreement ends by expiry with the first result standing.
+
 ## Known limitations
 
 - The cause of the first reconcile revert (decision 10) was not established. After the change, advisory 1 recorded anchor MATCH on both sources, so the pages did not differ at that time.
 - No OVERTURNED outcome has been observed on chain. The expiry path, a late challenge, the drift flag and a second policy owner were not run on chain. They are covered by the local mock run described in TEST.md.
-- The model path (sources without a vector) ran on chain in two reconciliations but its tolerance band has no dedicated on-chain test.
+- The model path (sources without a vector) ran on chain in reconciliations and once in a challenge (advisory 6), but its tolerance band has no dedicated on-chain test and no on-chain case where validators reject a conflicting bucket was run.
+- In the second test round, resolve_challenge on an advisory whose two sources both carry vectors returned UNDETERMINED twice before a later resolve on another advisory finalized. The cause was not established.
 - Only CVSS 3.0 and 3.1 are calculated.
 - The independence check on sources compares the last two labels of host names.
 - Bradbury was not completed, see TEST.md section G.
