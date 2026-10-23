@@ -1,6 +1,6 @@
 # Test cases: SeverityReconciler
 
-Status values: RUN (executed, the result below was observed) or DEFINED (not executed on chain). Results come from the final Studio test report dated 2026-10-21. ACC1 is the registrar and policy owner 1. ACC2 is the challenger and policy owner 2. A row marked v1 ran on the first deployment of that contract, which has the same function as the final file.
+Status values: RUN (executed, the result below was observed) or DEFINED (not executed on chain). Results come from the Studio test reports dated 2026-10-21 and 2026-10-23. ACC1 is the registrar and policy owner 1. ACC2 is the challenger and policy owner 2. The Deployment column says which deployment the row ran on: v1 is the first deployment, v2 is the second, v3 is the deployment made after the second review round. Registry and parser rows say kept from the first round because those two contracts were deployed once and not redeployed. A row marked (same file) ran on an earlier deployment of a file that did not change. A row marked (superseded code) ran on an earlier version of the contract whose code was later replaced.
 
 Test data: VID = CVE-2021-44228. OSV = https://api.osv.dev/v1/vulns/GHSA-jfh8-c2jp-5v3q. CVEORG = https://cveawg.mitre.org/api/cve/CVE-2021-44228. G_LOW and G_HIGH are two public gists whose text mentions the vulnerability id: G_LOW states a low rating with a CVSS vector, G_HIGH states Severity: High with no vector.
 
@@ -16,3 +16,4 @@ Test data: VID = CVE-2021-44228. OSV = https://api.osv.dev/v1/vulns/GHSA-jfh8-c2
 | V5 | v2 | reconcile(2) (G_LOW, OSV, CVEORG) | CRITICAL, SPLIT | Succeeded: CRITICAL, SPLIT | RUN | 0xa6bdcbb02b45220e38629f5036f5f0524adfbdea8103afc7056c9feefd681ca1 (https://explorer-studio.genlayer.com/tx/0xa6bdcbb02b45220e38629f5036f5f0524adfbdea8103afc7056c9feefd681ca1) |
 | V6 | v2 | reconcile(1) again | ALREADY_RECONCILED | Reverted with ALREADY_RECONCILED | RUN | 0x85c1bd4946161c3a4b9715225ce9646f2a493758727f75482ac25d9ae4b74a1c (https://explorer-studio.genlayer.com/tx/0x85c1bd4946161c3a4b9715225ce9646f2a493758727f75482ac25d9ae4b74a1c) |
 | V7 | v2 | Edit a source after parse, then reconcile | Succeeds with anchor DRIFT on the edited source | Not run on chain. Covered only by the local mock run | DEFINED | none |
+| V2n | v3 round | reconcile(6) | CRITICAL, ADJACENT | Succeeded: CRITICAL, ADJACENT | RUN | 0xc04705933912dd21fbab1dc2b592b02cb70c28378340bffa65a08472372db7a8 (https://explorer-studio.genlayer.com/tx/0xc04705933912dd21fbab1dc2b592b02cb70c28378340bffa65a08472372db7a8) |
