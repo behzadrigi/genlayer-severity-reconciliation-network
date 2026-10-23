@@ -42,7 +42,7 @@ All cross-contract access is view reads. No contract relies on a cross-contract 
 | 1 | AdvisoryRegistry | Records a vulnerability id with two or three sources on different base domains | Deterministic |
 | 2 | AdvisorySourceParser | Fetches a source, stores its SHA-256 digest and the CVSS vectors it contains, each scored by the built-in calculator | Strict equality across validators (digest, vectors, length) |
 | 3 | SeverityReconciler | Fetches every source, derives a severity bucket per source, reconciles them | Custom tolerance band: digests, buckets, methods, scores and the reconciled result must match exactly, strength scores of model-read sources must agree within 15 points |
-| 4 | ReconciliationChallenge | Independent corrected outcome after a challenge, blind to the first result and to the challenger | Non-comparative: validators verify the leader's output (vectors recomputed, quotes found in their own copy of the text) instead of repeating the judgment |
+| 4 | ReconciliationChallenge | Independent corrected outcome after a challenge, blind to the first result and to the challenger | Comparative on the corrected bucket (every validator determines the bucket itself and the leader's bucket must equal it) plus evidence verification (the quote is found in the validator's copy and supports exactly one bucket) |
 | 5 | SeverityPolicyGate | Per-owner policy (block threshold and split action) applied to final results | Deterministic |
 
 ## How a source is read
@@ -72,22 +72,23 @@ The view `SeverityPolicyGate.lifecycle(advisory_id)` returns the stage, `challen
 
 ## Deployed addresses
 
-Studio, tested on 2026-10-21. Full evidence is in TEST.md.
+Studio, tested on 2026-10-21 and again on 2026-10-23 after a review rejection (only ReconciliationChallenge and SeverityPolicyGate were redeployed). Full evidence is in TEST.md.
 
 | Contract | Studio |
 |----------|--------|
 | AdvisoryRegistry | [0xE1B81A97fb45470d20942AA21D0191e39bB2b860](https://explorer-studio.genlayer.com/address/0xE1B81A97fb45470d20942AA21D0191e39bB2b860) |
 | AdvisorySourceParser | [0xa73E0127b569dCFD411f0856640e90ed75b28e26](https://explorer-studio.genlayer.com/address/0xa73E0127b569dCFD411f0856640e90ed75b28e26) |
 | SeverityReconciler | [0x4f8293a34B4F4477B275EC73a8ADeDcE7e0843F3](https://explorer-studio.genlayer.com/address/0x4f8293a34B4F4477B275EC73a8ADeDcE7e0843F3) |
-| ReconciliationChallenge | [0x5D3234f13a4ECeA29dd91617462f2e58b22eFD9D](https://explorer-studio.genlayer.com/address/0x5D3234f13a4ECeA29dd91617462f2e58b22eFD9D) |
-| SeverityPolicyGate | [0xC0a4F68884b61e071E7c6BB45D0cF4dEe28f4Ccd](https://explorer-studio.genlayer.com/address/0xC0a4F68884b61e071E7c6BB45D0cF4dEe28f4Ccd) |
+| ReconciliationChallenge | [0xa11cA73018f99052a8Faa7b0Fb1eb7092a685B68](https://explorer-studio.genlayer.com/address/0xa11cA73018f99052a8Faa7b0Fb1eb7092a685B68) |
+| SeverityPolicyGate | [0xA04146a186a447b721A57DEa5a10d5e80086DF06](https://explorer-studio.genlayer.com/address/0xA04146a186a447b721A57DEa5a10d5e80086DF06) |
 
 Bradbury: not completed, no Bradbury result is claimed. See TEST.md section G.
 
 ## Test results at a glance
 
-- Studio: 43 test rows with a recorded result and 12 rows defined but not executed on chain (TEST.md section C). The core pipeline ran end to end: reconcile (unanimous, adjacent and split results), challenge raise, independent resolve (UPHELD), and gate evaluation, plus the refusals that protect it (evaluate inside the window and evaluate while a challenge is pending).
-- Not run on chain: the expiry path, a late challenge, an OVERTURNED outcome and the drift test. They are listed in TEST.md section E and are covered by a local mock run (108 checks).
+- Studio: 53 test rows with a recorded result and 14 rows defined but not executed on chain (TEST.md section C). The core pipeline ran end to end twice: reconcile (unanimous, adjacent and split results), challenge raise, independent resolve (UPHELD), and gate evaluation, plus the refusals that protect it (evaluate inside the window and evaluate while a challenge is pending).
+- The second run (advisory 6) used a model-read source (no CVSS vector) together with two vector sources, and resolve_challenge finalized with validators binding the corrected bucket independently.
+- Not run on chain: the expiry path, a late challenge, an OVERTURNED outcome and the drift test. They are listed in TEST.md section F and are covered by a local mock run (115 checks).
 
 ## Quick start
 
@@ -103,13 +104,13 @@ Then: `time_probe()` on the reconciler first (proves block time), `register_advi
 
 ## Source integrity
 
-The files in contracts/ are the files deployed on Studio. SHA-256 checksums:
+The files in contracts/ are the files deployed on Studio (the registry, parser and reconciler were deployed in the first round, the challenge and the gate in the second round). SHA-256 checksums:
 
 ```
 2cd3562b22301de4c04a46cdb0e06c4a98dc28ce258b544d74728df285f85733  advisory_registry.py
 25f07b3e09a2438251005effe3bd68b6a5c598a7ebd320a8fd15c78d5eb6fceb  advisory_source_parser.py
 a8a24e276c0852fff1b72372c0e6c44605e4443cedd979a72cb68d4fc33760f8  severity_reconciler.py
-0bcc950959e493707fea2223bbd59f58ca89fe3ccde1b06b230d43ec3c4ac4e4  reconciliation_challenge.py
+dbc2837aa7411ac70422ae441e7fd529ca63e52962c4d160f8ef34e1eef74888  reconciliation_challenge.py
 7a0a6642403bca39ed8ac87e183d88e2265e879862189b494837b3d258131a79  severity_policy_gate.py
 ```
 
@@ -123,4 +124,5 @@ Verify with `sha256sum contracts/*.py`.
 - The independence check compares the last two labels of the host names. It is a practical guard, not a proof of independent ownership.
 - Pages that change their text can produce different fresh digests over time. Reconcile does not revert on that. It records MATCH or DRIFT against the parse-time digest, and the challenge judge keeps the first result when the digests it sees differ from the reconciliation digests.
 - A resolved challenge keeps the first result when the sources changed, and an expired challenge keeps the first result.
+- A model-read source on an ambiguous page can fail validator agreement in a challenge and must be retried. A challenge that never reaches agreement ends by expiry with the first result standing.
 - Anyone may call parse, reconcile, resolve, expire and evaluate. Timing is block time of the transaction.
