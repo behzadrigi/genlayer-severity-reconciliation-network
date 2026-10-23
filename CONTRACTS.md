@@ -48,7 +48,7 @@ Guards: `ALREADY_RECONCILED`, `ADVISORY_NOT_FOUND`, `PARSE_REQUIRED_1`, `PARSE_R
 
 Safety properties: an unreadable source reverts and stores nothing, so it can never produce a bad record. Any doubt (unrelated source, unclear bucket, weak statement) gives UNRESOLVED, which the gate treats as HOLD. The record carries `deadline = reconciled_at + window_seconds`, the single source of truth for the challenge window.
 
-## 4. ReconciliationChallenge (non-comparative)
+## 4. ReconciliationChallenge (comparative on the corrected bucket, with evidence verification)
 
 Constructor: `(reconciler_addr, resolution_seconds)`. Error `INVALID_RESOLUTION_WINDOW`.
 
@@ -60,7 +60,7 @@ Methods: `time_probe()`, `raise_challenge(advisory_id)`, `resolve_challenge(advi
 
 `resolve_challenge` is the independent judge. It reads only the source URLs, the digests stored in the reconciliation and the vulnerability id. Inside the nondeterministic block it fetches every source. If the fresh digests differ from the stored ones, it returns without judging and the first result stands (reason `SOURCE_CHANGED_ORIGINAL_STANDS`). Otherwise each source is judged: vector sources by the contract, other sources by the model, which must return a bucket and a short verbatim quote. The judge prompt contains only the document text. It never contains the first result, the challenge, or anything from the challenger. After consensus the contract combines the judged buckets, compares the corrected result with the first one (same reconciled bucket and agreement means UPHELD, otherwise OVERTURNED) and stores the corrected result as final, so a correction can move in either direction, including to UNRESOLVED.
 
-Consensus: validators do not repeat the judgment. They fetch the sources themselves and check the leader's output: equal digests, vector-based buckets recomputed, for model-judged buckets the quote occurs in their own copy of the text and contains a severity word or a score that matches the bucket, a bucket outside the vector range is rejected, and a leader abstention (UNCLEAR) is accepted only if the validator's own model run also abstains.
+Consensus: validators do not trust the leader's bucket. Each validator fetches every source itself and determines the bucket on its own. Vector sources are classified by the contract's calculator. Model-read sources are classified by the validator's own blind model run (the same judge prompt, never shown the leader's answer), restricted to the vector range when vectors disagree. The leader's bucket for a source is accepted only if it equals the validator's own bucket, so the corrected bucket is bound by independent determination. A leader abstention (UNCLEAR) is accepted only if the validator's own run also gives UNCLEAR. On top of that, the quote must occur in the validator's own copy of the text, must be 8 to 200 characters long, and must support exactly one bucket (the claimed one): a quote containing a severity word or score of a second bucket is rejected. The digests must be equal as well.
 
 `expire_challenge` guards: `CHALLENGE_NOT_FOUND`, `NOT_PENDING`, `RESOLUTION_WINDOW_OPEN`. After the resolution deadline anyone may expire a pending challenge and the first result stands.
 
