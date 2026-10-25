@@ -1,22 +1,22 @@
 # Test report
 
-Dates: 2026-10-21 (first round) and 2026-10-23 (second round after a review rejection). Network: GenLayer Studio. Bradbury was not completed, see section G. Accounts: ACC1 0x6E74BCbC7153892E8602E72182e64D525A0e3Ac7 (registrar, policy owner 1) and ACC2 0xaB46b4ae332818735fcc1b6C3E37Ec0b33D92757 (challenger, policy owner 2). Vulnerability id used everywhere: CVE-2021-44228.
+Dates: 2026-10-21 (first round), 2026-10-23 (second round, after a review rejection) and 2026-10-25 (third round, after an Action needed request). Network: GenLayer Studio. Bradbury was not completed, see section G. Accounts: ACC1 0x6E74BCbC7153892E8602E72182e64D525A0e3Ac7 (registrar, policy owner 1) and ACC2 0xaB46b4ae332818735fcc1b6C3E37Ec0b33D92757 (challenger, policy owner 2). Vulnerability id used everywhere: CVE-2021-44228.
 
 Status legend: RUN means executed and the result was observed. DEFINED means not executed on chain. Nothing is marked RUN without a recorded result.
 
 ## A. Deployed contracts (Studio, current)
 
-| Contract | Address | Constructor |
-|----------|---------|-------------|
-| AdvisoryRegistry | https://explorer-studio.genlayer.com/address/0xE1B81A97fb45470d20942AA21D0191e39bB2b860 | none |
-| AdvisorySourceParser | https://explorer-studio.genlayer.com/address/0xa73E0127b569dCFD411f0856640e90ed75b28e26 | none |
-| SeverityReconciler | https://explorer-studio.genlayer.com/address/0x4f8293a34B4F4477B275EC73a8ADeDcE7e0843F3 | registry, parser, 600 |
-| ReconciliationChallenge (v3) | https://explorer-studio.genlayer.com/address/0xa11cA73018f99052a8Faa7b0Fb1eb7092a685B68 | reconciler, 300 |
-| SeverityPolicyGate (v3) | https://explorer-studio.genlayer.com/address/0xA04146a186a447b721A57DEa5a10d5e80086DF06 | reconciler, challenge v3 |
+| Contract | Address | Deployment transaction | Constructor |
+|----------|---------|------------------------|-------------|
+| AdvisoryRegistry | https://explorer-studio.genlayer.com/address/0xE1B81A97fb45470d20942AA21D0191e39bB2b860 | recorded in the first-round report without a contract name, see below | none |
+| AdvisorySourceParser | https://explorer-studio.genlayer.com/address/0xa73E0127b569dCFD411f0856640e90ed75b28e26 | recorded in the first-round report without a contract name, see below | none |
+| SeverityReconciler | https://explorer-studio.genlayer.com/address/0x4f8293a34B4F4477B275EC73a8ADeDcE7e0843F3 | not recorded | registry, parser, 600 |
+| ReconciliationChallenge (v4) | https://explorer-studio.genlayer.com/address/0x41D5DdE8Db883adacc7A2DB5D093b722BD3C642e | https://explorer-studio.genlayer.com/tx/0x76bf12ad80aa8b58f6656eaca6c4dc48d98ab5d0a96e11ba2eeda06e8d81e2f3 | reconciler, 300 |
+| SeverityPolicyGate (v4) | https://explorer-studio.genlayer.com/address/0xEE8912A76889Fc252a3F1Db61B251238d5e6E9dF | https://explorer-studio.genlayer.com/tx/0xede2437aa7ed312d32bff04509e91c3fe1cf073c400b80710827ca540f0b06c5 | reconciler, challenge v4 |
 
-Deployment transactions of the v3 contracts: ReconciliationChallenge 0x40d417b43ff7b9125e8814d048439aa786b88edd9204e600133d22a0abad6492 and SeverityPolicyGate 0x5d4d22c23fb8cc9468b7e4f4ac8d2018e050929fb73f896a019c3c945a420546.
+The registry, parser and reconciler were deployed once and kept through all rounds. The gate file did not change since the first round, it is redeployed whenever the challenge contract is, because it stores the address of the challenge contract.
 
-Superseded deployments: ReconciliationChallenge v2 0x5D3234f13a4ECeA29dd91617462f2e58b22eFD9D and SeverityPolicyGate v2 0xC0a4F68884b61e071E7c6BB45D0cF4dEe28f4Ccd (both deployed in the first round, the challenge code of v2 was replaced after the review), and the first deployments SeverityReconciler 0x289Db46D074A8b119Cd336d194AA2420339E0800, ReconciliationChallenge 0xdd83F26996615124Ed599A0F21145102D2a32dC6 and SeverityPolicyGate 0xEBb8c37e423FBfE8e79B07C3795d9296f71C6E69. The registry, parser and reconciler were deployed once and kept. The gate file did not change between v2 and v3, it was redeployed because it stores the address of the challenge contract.
+Superseded deployments: v3 ReconciliationChallenge 0xa11cA73018f99052a8Faa7b0Fb1eb7092a685B68 (deployment tx 0x40d417b43ff7b9125e8814d048439aa786b88edd9204e600133d22a0abad6492) and v3 SeverityPolicyGate 0xA04146a186a447b721A57DEa5a10d5e80086DF06 (deployment tx 0x5d4d22c23fb8cc9468b7e4f4ac8d2018e050929fb73f896a019c3c945a420546), v2 ReconciliationChallenge 0x5D3234f13a4ECeA29dd91617462f2e58b22eFD9D and v2 SeverityPolicyGate 0xC0a4F68884b61e071E7c6BB45D0cF4dEe28f4Ccd, and the first deployments SeverityReconciler 0x289Db46D074A8b119Cd336d194AA2420339E0800, ReconciliationChallenge 0xdd83F26996615124Ed599A0F21145102D2a32dC6 and SeverityPolicyGate 0xEBb8c37e423FBfE8e79B07C3795d9296f71C6E69.
 
 Deployment transaction hashes listed in the first-round report (the report does not say which contract each belongs to, check each on the explorer):
 
@@ -71,11 +71,11 @@ G_HIGH   dd4a66eb...7ad8  (0 vectors)
 | C2 | ReconciliationChallenge | v2 (superseded code) | Reverted with ALREADY_CHALLENGED | RUN | 0xef2c30a3a9cd0ee44db0c90a51e0a7fb50f4e49ddfca3d4784bcfa0aa53996c3 (https://explorer-studio.genlayer.com/tx/0xef2c30a3a9cd0ee44db0c90a51e0a7fb50f4e49ddfca3d4784bcfa0aa53996c3) |
 | C5 | ReconciliationChallenge | v2 (superseded code) | Reverted with RECONCILIATION_NOT_FOUND | RUN | 0x54bcd80224e4c0a01118995c685fb855552eb8ad4d271896f355153081317e3e (https://explorer-studio.genlayer.com/tx/0x54bcd80224e4c0a01118995c685fb855552eb8ad4d271896f355153081317e3e) |
 | C6 | ReconciliationChallenge | v2 (superseded code) | Succeeded: RESOLVED, outcome UPHELD, reason INDEPENDENT_JUDGMENT, source match true | RUN | 0x423826373e01ce3cd2ed1ed5446e424d36d2f94efe81f6851e36e9e655c0e270 (https://explorer-studio.genlayer.com/tx/0x423826373e01ce3cd2ed1ed5446e424d36d2f94efe81f6851e36e9e655c0e270) |
-| C3 | ReconciliationChallenge | v2 (superseded code) | Not run on chain | DEFINED | none |
-| C4 | ReconciliationChallenge | v2 (superseded code) | Not run on chain | DEFINED | none |
-| C7 | ReconciliationChallenge | v2 (superseded code) | Not run on chain | DEFINED | none |
+| C3 | ReconciliationChallenge | v2 (superseded code) | Not run on the deployment it was written for. Covered on the v4 deployment by row C1y | DEFINED | none |
+| C4 | ReconciliationChallenge | v2 (superseded code) | Not run on the deployment it was written for. Covered on the v4 deployment by row C4y | DEFINED | none |
+| C7 | ReconciliationChallenge | v2 (superseded code) | Not run on the deployment it was written for. Covered on the v4 deployment by row C6y2 | DEFINED | none |
 | C8 | ReconciliationChallenge | v2 (superseded code) | Not run on chain | DEFINED | none |
-| C9 | ReconciliationChallenge | v2 (superseded code) | Not run on chain | DEFINED | none |
+| C9 | ReconciliationChallenge | v2 (superseded code) | Not run on the deployment it was written for. Covered on the v4 deployment by row C9y | DEFINED | none |
 | C10 | ReconciliationChallenge | v2 (superseded code) | Not run on chain | DEFINED | none |
 | V0g | SeverityPolicyGate | v2 (same file) | 1792450118 | RUN | 0x1a344370e70409d692520ebf8054ffdc0252bcdedef08970846aa33efe04aa67 (https://explorer-studio.genlayer.com/tx/0x1a344370e70409d692520ebf8054ffdc0252bcdedef08970846aa33efe04aa67) |
 | G1 | SeverityPolicyGate | v1 | Reverted with INVALID_BLOCK_AT | RUN | view, or transaction hash not recorded in the report |
@@ -90,24 +90,42 @@ G_HIGH   dd4a66eb...7ad8  (0 vectors)
 | G11a | SeverityPolicyGate | v2 (same file) | CHALLENGE_RESOLVED, result_final true | RUN | view, or transaction hash not recorded in the report |
 | G11b | SeverityPolicyGate | v2 (same file) | RECONCILED, result_final false | RUN | view, or transaction hash not recorded in the report |
 | G7 | SeverityPolicyGate | v2 (same file) | Not run on chain | DEFINED | none |
-| G9 | SeverityPolicyGate | v2 (same file) | Not run on chain | DEFINED | none |
+| G9 | SeverityPolicyGate | v2 (same file) | Not run on the deployment it was written for. Covered on the v4 deployment by row G9y | DEFINED | none |
 | G11c | SeverityPolicyGate | v2 (same file) | Not run on chain | DEFINED | none |
 | G12 | SeverityPolicyGate | v2 (same file) | Not run on chain | DEFINED | none |
 | G13 | SeverityPolicyGate | v2 (same file) | Not run on chain | DEFINED | none |
 | A6 | AdvisoryRegistry | v3 round | Registered | RUN | 0x1e2068d1b265a966f21201adce86036f51f2172a43ef783ceb8fae3bc8e3f383 (https://explorer-studio.genlayer.com/tx/0x1e2068d1b265a966f21201adce86036f51f2172a43ef783ceb8fae3bc8e3f383) |
 | V2n | SeverityReconciler | v3 round | Succeeded: CRITICAL, ADJACENT | RUN | 0xc04705933912dd21fbab1dc2b592b02cb70c28378340bffa65a08472372db7a8 (https://explorer-studio.genlayer.com/tx/0xc04705933912dd21fbab1dc2b592b02cb70c28378340bffa65a08472372db7a8) |
-| V0n | ReconciliationChallenge | v3 | Not reported for the new deployment | DEFINED | none |
+| V0n | ReconciliationChallenge | v3 | Not reported for this deployment | DEFINED | none |
 | C1n | ReconciliationChallenge | v3 | Accepted | RUN | 0xeb840e147eac5dbc2e57327be0fb5768ca3078f40b228a87a1b386c17a1ec6b2 (https://explorer-studio.genlayer.com/tx/0xeb840e147eac5dbc2e57327be0fb5768ca3078f40b228a87a1b386c17a1ec6b2) |
 | C6n | ReconciliationChallenge | v3 | Finalized. Judged buckets HIGH, CRITICAL, CRITICAL. Methods MODEL, VECTOR, VECTOR. Quotes [severity: high., empty, empty]. match true. Outcome UPHELD. Final CRITICAL, ADJACENT | RUN | 0x14df5340201b230cff0dab47bea195c94d647ea9fa0b70690821d5c22fd1a436 (https://explorer-studio.genlayer.com/tx/0x14df5340201b230cff0dab47bea195c94d647ea9fa0b70690821d5c22fd1a436) |
 | C6n-a7 | ReconciliationChallenge | v3 | Returned UNDETERMINED twice. The transaction hashes of that attempt were not recorded. The later resolve on advisory 6 finalized. The cause was not established | RUN | view, or transaction hash not recorded in the report |
-| V0ng | SeverityPolicyGate | v3 | Not reported for the new deployment | DEFINED | none |
+| V0ng | SeverityPolicyGate | v3 | Not reported for this deployment | DEFINED | none |
 | G3.1n | SeverityPolicyGate | v3 | Accepted | RUN | 0x03e7a0aa1743c50aa745b68222bb13023129683246e3dfc3086b50daaebc28aa (https://explorer-studio.genlayer.com/tx/0x03e7a0aa1743c50aa745b68222bb13023129683246e3dfc3086b50daaebc28aa) |
 | G3.2n | SeverityPolicyGate | v3 | Accepted | RUN | 0x8b1307193ee25986aca9f4ea3731ea4a53153a32e40e0c5d96826f9e465ca4ca (https://explorer-studio.genlayer.com/tx/0x8b1307193ee25986aca9f4ea3731ea4a53153a32e40e0c5d96826f9e465ca4ca) |
-| G4n | SeverityPolicyGate | v3 | evaluate(7, ACC1) on advisory 7 (sources G_LOW and OSV) reverted with CHALLENGE_WINDOW_OPEN. The same check on advisory 6 was run in the same round but its hash was not recorded | RUN | 0x2a1504fb73aca117f02d3c80e8cf19c356aef7061e2d31392b61a143563445d6 (https://explorer-studio.genlayer.com/tx/0x2a1504fb73aca117f02d3c80e8cf19c356aef7061e2d31392b61a143563445d6) |
+| G4n | SeverityPolicyGate | v3 | Reverted with CHALLENGE_WINDOW_OPEN | RUN | 0x2a1504fb73aca117f02d3c80e8cf19c356aef7061e2d31392b61a143563445d6 (https://explorer-studio.genlayer.com/tx/0x2a1504fb73aca117f02d3c80e8cf19c356aef7061e2d31392b61a143563445d6) |
 | G5n | SeverityPolicyGate | v3 | Reverted with CHALLENGE_UNRESOLVED | RUN | 0x9c5b8a8624cfb12997ee3244d965912ecf592fe2cbe58d124922e31f43e18096 (https://explorer-studio.genlayer.com/tx/0x9c5b8a8624cfb12997ee3244d965912ecf592fe2cbe58d124922e31f43e18096) |
 | G8n | SeverityPolicyGate | v3 | Succeeded: BLOCK, path UPHELD, reason AT_OR_ABOVE_THRESHOLD, final CRITICAL, ADJACENT | RUN | 0x4c47a7a4f9574ec2a12f67ca816ca9ae568c09d676aaad1d6b73fecb1ca967ee (https://explorer-studio.genlayer.com/tx/0x4c47a7a4f9574ec2a12f67ca816ca9ae568c09d676aaad1d6b73fecb1ca967ee) |
+| A_X | AdvisoryRegistry | v4 round | Registered as advisory 8 | RUN | view, or transaction hash not recorded in the report |
+| A_Y | AdvisoryRegistry | v4 round | Registered as advisory 9 | RUN | view, or transaction hash not recorded in the report |
+| V2x | SeverityReconciler | v4 round | Reconciled. The later rows show agreement SPLIT | RUN | view, or transaction hash not recorded in the report |
+| V2y | SeverityReconciler | v4 round | Reconciled. The later rows show reconciled CRITICAL and agreement SPLIT | RUN | view, or transaction hash not recorded in the report |
+| V0d | ReconciliationChallenge | v4 | Not reported for this deployment | DEFINED | none |
+| V0dg | SeverityPolicyGate | v4 | Not reported for this deployment | DEFINED | none |
+| G3d | SeverityPolicyGate | v4 | Not reported as separate rows. The HOLD decision of row G9y shows that ACC1 had a policy on the v4 gate | DEFINED | none |
+| C1y | ReconciliationChallenge | v4 | Accepted | RUN | 0xe94922f0e0ba5040ba0c090dc75d6f717625e24955dd9def6aab51b062d3391f (https://explorer-studio.genlayer.com/tx/0xe94922f0e0ba5040ba0c090dc75d6f717625e24955dd9def6aab51b062d3391f) |
+| C4y | ReconciliationChallenge | v4 | Reverted with RESOLUTION_WINDOW_OPEN | RUN | view, or transaction hash not recorded in the report |
+| C6y | ReconciliationChallenge | v4 | Reverted with RESOLUTION_WINDOW_CLOSED | RUN | 0x550684fc31bdcbe7f29306de712288d64fc422ad46c539ee0bdf7add58ae948a (https://explorer-studio.genlayer.com/tx/0x550684fc31bdcbe7f29306de712288d64fc422ad46c539ee0bdf7add58ae948a) |
+| C7y | ReconciliationChallenge | v4 | PENDING | RUN | view, or transaction hash not recorded in the report |
+| C9y | ReconciliationChallenge | v4 | Succeeded: status EXPIRED, reason EXPIRED_ORIGINAL_STANDS, final CRITICAL, SPLIT | RUN | 0xf6e7c503c7fc1a8d5e620dd7658084d6dc9272a09396352e632479dff647e446 (https://explorer-studio.genlayer.com/tx/0xf6e7c503c7fc1a8d5e620dd7658084d6dc9272a09396352e632479dff647e446) |
+| C6y2 | ReconciliationChallenge | v4 | Reverted with NOT_PENDING | RUN | 0x63d05059d0792c6796a9ad0065a6fb58c995440c6b58cc0ba8f56811a65a24e5 (https://explorer-studio.genlayer.com/tx/0x63d05059d0792c6796a9ad0065a6fb58c995440c6b58cc0ba8f56811a65a24e5) |
+| C1x | ReconciliationChallenge | v4 | Accepted | RUN | view, or transaction hash not recorded in the report |
+| C6x | ReconciliationChallenge | v4 | Succeeded. The later row G8x shows path UPHELD | RUN | view, or transaction hash not recorded in the report |
+| G9y | SeverityPolicyGate | v4 | HOLD, path EXPIRED, final agreement SPLIT (ACC1 holds on a split) | RUN | view, or transaction hash not recorded in the report |
+| G5x | SeverityPolicyGate | v4 | Reverted with CHALLENGE_UNRESOLVED | RUN | view, or transaction hash not recorded in the report |
+| G8x | SeverityPolicyGate | v4 | HOLD, path UPHELD, final agreement SPLIT | RUN | view, or transaction hash not recorded in the report |
 
-Counts from the tables above: 67 test rows, 53 RUN, 14 DEFINED. 29 of the RUN rows carry a full transaction hash. The other RUN rows are views, Registry and Parser transactions whose hashes were not recorded, and an attempt whose hashes were not recorded (C6n-a7).
+Counts from the tables above: 85 test rows, 68 RUN, 17 DEFINED. 33 of the RUN rows carry a full transaction hash. The other RUN rows are views, Registry, Parser and some v4 round transactions whose hashes were not recorded in the reports, and an attempt whose hashes were not recorded (C6n-a7).
 
 ## D. What happened with the first reconcile
 
@@ -117,22 +135,33 @@ The cause of that revert was not established. The evidence does not settle wheth
 
 The change: reconcile no longer reverts on a digest difference. It fetches the sources itself, validators agree on those fetches, and the record stores the fresh digests, the parse-time digests (anchor_digests) and a MATCH or DRIFT flag per source. After the change reconcile(1) succeeded with CRITICAL and UNANIMOUS (the report calls it the second attempt, the outcome of the first attempt on the new deployment is not described).
 
-## E. Second review round (challenge validation)
+## E. Review rounds
+
+### Second round: independent binding of the corrected bucket
 
 The submission was rejected with this reason: the challenge validator did not independently bind the corrected severity, and for model-read sources conflicting buckets could both validate when the page contains matching quoted words or scores, which can change the final policy action.
 
-The change: in ReconciliationChallenge each validator now determines the bucket of every source on its own, with its own blind run, and the leader's bucket is accepted only when it equals the validator's bucket. A leader abstention is accepted only if the validator's own run abstains too. The quote must also occur in the validator's copy of the text and must support exactly one bucket. Only ReconciliationChallenge (and the gate, which stores its address) was redeployed.
+The change: in ReconciliationChallenge each validator now determines the bucket of every source on its own, with its own blind run, and the leader's bucket is accepted only when it equals the validator's bucket. A leader abstention is accepted only if the validator's own run abstains too. The quote must also occur in the validator's copy of the text and must support exactly one bucket.
 
-On-chain result of the fix, advisory 6 with sources G_HIGH (model-read, no vector), OSV and CVEORG (rows A6, V2n, G3.1n, G3.2n, G4n, C1n, G5n, C6n, G8n): reconcile gave CRITICAL and ADJACENT. evaluate inside the window reverted with CHALLENGE_WINDOW_OPEN (the transaction hash recorded for that check, row G4n, belongs to advisory 7 from the same round, the advisory 6 hash was not recorded) and while the challenge was pending with CHALLENGE_UNRESOLVED. resolve_challenge finalized with judged buckets HIGH, CRITICAL, CRITICAL, methods MODEL, VECTOR, VECTOR, quotes [severity: high., empty, empty], match true and outcome UPHELD. The gate then returned BLOCK with path UPHELD for policy owner ACC1 (block at HIGH).
+On-chain result (v3), advisory 6 with sources G_HIGH (model-read, no vector), OSV and CVEORG (rows A6, V2n, G3.1n, G3.2n, G5n, C1n, C6n, G8n): reconcile gave CRITICAL and ADJACENT. evaluate while the challenge was pending reverted with CHALLENGE_UNRESOLVED. resolve_challenge finalized with judged buckets HIGH, CRITICAL, CRITICAL, methods MODEL, VECTOR, VECTOR, quotes [severity: high., empty, empty], match true and outcome UPHELD. The gate then returned BLOCK with path UPHELD for policy owner ACC1 (block at HIGH). The evaluate-inside-the-window check of that round (row G4n) was recorded on advisory 7.
 
-Earlier in the same round, resolve_challenge on advisory 7 (sources G_LOW and OSV, both vector sources, no model call) returned UNDETERMINED twice. The cause was not established and the hashes of those transactions were not recorded. The later resolve on advisory 6 finalized.
+Earlier in that round, resolve_challenge on advisory 7 (sources G_LOW and OSV, both vector sources, no model call) returned UNDETERMINED twice. The cause was not established and the hashes of those transactions were not recorded. The later resolve on advisory 6 finalized.
+
+### Third round: resolution deadline enforced inside resolve_challenge
+
+The steward asked that a pending challenge cannot be resolved at or after resolution_deadline and must follow the expiry path, and asked for matching deployed source for the corrected ReconciliationChallenge, a gate configured to that corrected challenge, and updated Explorer links.
+
+The change: resolve_challenge now reads block time and, if it is at or after the resolution deadline of the pending challenge, reverts with RESOLUTION_WINDOW_CLOSED before reading any source and stores nothing. expire_challenge is allowed from that same moment, so the two windows do not overlap. Only ReconciliationChallenge changed. It was redeployed with the gate (v4).
+
+On-chain result (v4), advisory 9 with sources G_LOW and CVEORG (rows C1y, C4y, C6y, C7y, C9y, G9y, C6y2): the challenge was raised, an early expire reverted with RESOLUTION_WINDOW_OPEN, resolve_challenge after the deadline reverted with RESOLUTION_WINDOW_CLOSED, the status stayed PENDING, expire_challenge then succeeded (status EXPIRED, reason EXPIRED_ORIGINAL_STANDS, final CRITICAL and SPLIT), the gate decided HOLD with path EXPIRED, and a second resolve reverted with NOT_PENDING. Positive path, advisory 8 with sources G_MED (model-read), OSV and CVEORG (rows C1x, G5x, C6x, G8x): evaluate while pending reverted with CHALLENGE_UNRESOLVED, resolve_challenge before the deadline succeeded, and the gate decided HOLD with path UPHELD.
 
 ## F. Honest gaps
 
-- No OVERTURNED outcome was observed on chain. Every resolved challenge on chain was UPHELD, and the expiry path was not run. Overturn in several directions, the source-changed rule and the new validator checks against a lying leader are covered only by the local mock run in section H.
-- The new validator binding was exercised on chain once (C6n) with a leader whose answer matched the validators. A case where validators reject a conflicting bucket on chain was not run.
-- Not run on chain: C3, C4, C7, C8, C9, C10, G7, G9, G11c, G12, G13, V7, and the time probe on the v3 contracts.
-- Transaction hashes for the Registry and Parser tests were not recorded in the reports.
+- No OVERTURNED outcome was observed on chain. Every resolved challenge on chain was UPHELD. Overturn in several directions, the source-changed rule and the validator checks against a lying leader are covered only by the local mock run in section H.
+- The exact boundary (block time equal to resolution_deadline) cannot be hit by hand on chain. It is covered by the local mock run. On chain, the refusal was observed after the deadline.
+- The independent binding of the corrected bucket was exercised on chain once (C6n) with a leader whose answer matched the validators. A case where validators reject a conflicting bucket on chain was not run.
+- Not run on chain: a late raise_challenge after the reconciliation window (C8), challenge_count (C10), the lifecycle view on an expired challenge (G11c), evaluate for an unchallenged advisory with two policy owners (G7, G13), policy change and re-evaluation (G12), the drift test (V7), and the time probe and policy rows of some redeployments.
+- Transaction hashes for the Registry and Parser tests and for several rows of the v4 round (listed as hash not recorded) were not recorded in the reports.
 
 ## G. Bradbury
 
@@ -140,12 +169,13 @@ Bradbury was not completed and no Bradbury result is claimed. The first-round re
 
 ## H. Local mock run (not chain evidence)
 
-The final contract files were loaded in a local harness that replaces the GenLayer runtime with a stub (fake web pages, a scripted language model, a settable block clock). Result: 115 checks, 115 passed. It covers the registry guards, the CVSS calculator against official scores, vector extraction, parser versioning, reconcile outcomes (unanimous, adjacent, split, unresolved, bounded model path), drift recording, the strength tolerance band, challenge guards, the blind and untrusted-data judge prompts, overturn in several directions, source changed after reconcile (original stands), infrastructure failure leaving a challenge PENDING, expiry, the gate decision table for every combination, and finalization blocked inside the window and while pending. Seven checks target the review rejection: a leader bucket that differs from the validator's own bucket is rejected even when the page quotes it, a quote that supports two buckets is rejected, and an honest result is accepted. It is a logic check of the same files, not a replacement for the chain results.
+The final contract files were loaded in a local harness that replaces the GenLayer runtime with a stub (fake web pages, a scripted language model, a settable block clock). Result: 123 checks, 123 passed. It covers the registry guards, the CVSS calculator against official scores, vector extraction, parser versioning, reconcile outcomes (unanimous, adjacent, split, unresolved, bounded model path), drift recording, the strength tolerance band, challenge guards, the blind and untrusted-data judge prompts, overturn in several directions, source changed after reconcile (original stands), infrastructure failure leaving a challenge PENDING, expiry, the gate decision table for every combination, and finalization blocked inside the window and while pending. Seven checks target the second review round (a leader bucket that differs from the validator's own bucket is rejected even when the page quotes it, a quote that supports two buckets is rejected, an honest result is accepted). Eight checks target the third round: resolve one second before the deadline succeeds, expire one second before the deadline is refused, resolve exactly at the deadline is refused and leaves the challenge pending, expire exactly at the deadline succeeds, resolve after the expiry is refused, and the gate follows the expiry path. It is a logic check of the same files, not a replacement for the chain results.
 
 ## I. How the steward lessons map to evidence
 
-1. Finalization cannot bypass the challenge process. Chain evidence: G4 and G4n (evaluate inside the window reverts with CHALLENGE_WINDOW_OPEN), G5 and G5n (evaluate while the challenge is pending reverts with CHALLENGE_UNRESOLVED), G8 and G8n (evaluate after resolution succeeds with path UPHELD), G11a and G11b (lifecycle stages).
-2. The corrected bucket is determined and bound by validators independently. Chain evidence: C6n (resolve_challenge on a model-read source finalized with the new validator logic). Overturn and rejection of a conflicting bucket are covered only locally, see section F.
-3. Safe threshold comparison. The gate compares bucket ranks as small integers and has no subtraction. Chain evidence: G10 (six policy combinations, run on the first deployment of the gate), G8n (BLOCK for a CRITICAL result against a HIGH threshold).
-4. Content binding. The reconcile consensus binds the digests of the fresh fetches, and the record exposes anchor flags. Chain evidence: V2 (anchor MATCH, MATCH).
+1. Finalization cannot bypass the challenge process. Chain evidence: G4 and G4n (evaluate inside the window reverts with CHALLENGE_WINDOW_OPEN), G5, G5n and G5x (evaluate while the challenge is pending reverts with CHALLENGE_UNRESOLVED), G8, G8n and G8x (evaluate after resolution succeeds with path UPHELD), G9y (evaluate after expiry gives path EXPIRED), G11a and G11b (lifecycle stages).
+2. The corrected bucket is determined and bound by validators independently. Chain evidence: C6n. Overturn and rejection of a conflicting bucket are covered only locally, see section F.
+3. The resolution deadline is enforced. Chain evidence: C4y (expire before the deadline refused), C6y (resolve after the deadline refused with RESOLUTION_WINDOW_CLOSED), C7y (still PENDING), C9y (expire succeeds), C6y2 (resolve after expiry refused), C6x (resolve before the deadline succeeds).
+4. Safe threshold comparison. The gate compares bucket ranks as small integers and has no subtraction. Chain evidence: G10 (six policy combinations, run on the first deployment of the gate), G8n (BLOCK for a CRITICAL result against a HIGH threshold).
+5. Content binding. The reconcile consensus binds the digests of the fresh fetches, and the record exposes anchor flags. Chain evidence: V2 (anchor MATCH, MATCH).
 
