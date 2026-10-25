@@ -62,8 +62,8 @@ RECONCILED: challengeable while block time < challengeable_until
             (challengeable_until = reconciled_at + window_seconds)
  no challenge -> final once block time >= challengeable_until      (path UNCHALLENGED)
  challenge raised -> CHALLENGE_PENDING, the gate refuses to evaluate
-     resolve_challenge -> RESOLVED (path UPHELD or OVERTURNED, the judged result replaces the first one)
-     expire_challenge  -> EXPIRED  (only after resolution_deadline, the first result stands)
+     resolve_challenge -> RESOLVED (only while block time < resolution_deadline; path UPHELD or OVERTURNED, the judged result replaces the first one)
+     expire_challenge  -> EXPIRED  (only once block time >= resolution_deadline, the first result stands)
  RESOLVED or EXPIRED -> final
 Gate: evaluate(advisory, policy_owner) -> BLOCK, ALLOW or HOLD, recorded with the path taken
 ```
@@ -72,23 +72,23 @@ The view `SeverityPolicyGate.lifecycle(advisory_id)` returns the stage, `challen
 
 ## Deployed addresses
 
-Studio, tested on 2026-10-21 and again on 2026-10-23 after a review rejection (only ReconciliationChallenge and SeverityPolicyGate were redeployed). Full evidence is in TEST.md.
+Studio, tested on 2026-10-21, 2026-10-23 and 2026-10-25 (only ReconciliationChallenge and SeverityPolicyGate were redeployed after the first round). Full evidence is in TEST.md.
 
 | Contract | Studio |
 |----------|--------|
 | AdvisoryRegistry | [0xE1B81A97fb45470d20942AA21D0191e39bB2b860](https://explorer-studio.genlayer.com/address/0xE1B81A97fb45470d20942AA21D0191e39bB2b860) |
 | AdvisorySourceParser | [0xa73E0127b569dCFD411f0856640e90ed75b28e26](https://explorer-studio.genlayer.com/address/0xa73E0127b569dCFD411f0856640e90ed75b28e26) |
 | SeverityReconciler | [0x4f8293a34B4F4477B275EC73a8ADeDcE7e0843F3](https://explorer-studio.genlayer.com/address/0x4f8293a34B4F4477B275EC73a8ADeDcE7e0843F3) |
-| ReconciliationChallenge | [0xa11cA73018f99052a8Faa7b0Fb1eb7092a685B68](https://explorer-studio.genlayer.com/address/0xa11cA73018f99052a8Faa7b0Fb1eb7092a685B68) |
-| SeverityPolicyGate | [0xA04146a186a447b721A57DEa5a10d5e80086DF06](https://explorer-studio.genlayer.com/address/0xA04146a186a447b721A57DEa5a10d5e80086DF06) |
+| ReconciliationChallenge | [0x41D5DdE8Db883adacc7A2DB5D093b722BD3C642e](https://explorer-studio.genlayer.com/address/0x41D5DdE8Db883adacc7A2DB5D093b722BD3C642e) |
+| SeverityPolicyGate | [0xEE8912A76889Fc252a3F1Db61B251238d5e6E9dF](https://explorer-studio.genlayer.com/address/0xEE8912A76889Fc252a3F1Db61B251238d5e6E9dF) |
 
 Bradbury: not completed, no Bradbury result is claimed. See TEST.md section G.
 
 ## Test results at a glance
 
-- Studio: 53 test rows with a recorded result and 14 rows defined but not executed on chain (TEST.md section C). The core pipeline ran end to end twice: reconcile (unanimous, adjacent and split results), challenge raise, independent resolve (UPHELD), and gate evaluation, plus the refusals that protect it (evaluate inside the window and evaluate while a challenge is pending).
-- The second run (advisory 6) used a model-read source (no CVSS vector) together with two vector sources, and resolve_challenge finalized with validators binding the corrected bucket independently.
-- Not run on chain: the expiry path, a late challenge, an OVERTURNED outcome and the drift test. They are listed in TEST.md section F and are covered by a local mock run (115 checks).
+- Studio: 68 test rows with a recorded result and 17 rows defined but not executed on chain (TEST.md section C). The core pipeline ran end to end in three rounds: reconcile (unanimous, adjacent and split results), challenge raise, independent resolve (UPHELD), expiry, and gate evaluation, plus the refusals that protect it (evaluate inside the window, evaluate while a challenge is pending, resolve after the resolution deadline).
+- Model-read sources (no CVSS vector) went through reconcile and resolve_challenge on chain (advisories 6 and 8).
+- Not run on chain: an OVERTURNED outcome, a late challenge after the reconciliation window, the drift test and the exact boundary of the deadline. They are listed in TEST.md section F and are covered by a local mock run (123 checks).
 
 ## Quick start
 
@@ -104,13 +104,13 @@ Then: `time_probe()` on the reconciler first (proves block time), `register_advi
 
 ## Source integrity
 
-The files in contracts/ are the files deployed on Studio (the registry, parser and reconciler were deployed in the first round, the challenge and the gate in the second round). SHA-256 checksums:
+The files in contracts/ are the files deployed on Studio. The registry, parser and reconciler were deployed in the first round, the challenge and the gate were redeployed in later rounds and the addresses above are the current ones. SHA-256 checksums:
 
 ```
 2cd3562b22301de4c04a46cdb0e06c4a98dc28ce258b544d74728df285f85733  advisory_registry.py
 25f07b3e09a2438251005effe3bd68b6a5c598a7ebd320a8fd15c78d5eb6fceb  advisory_source_parser.py
 a8a24e276c0852fff1b72372c0e6c44605e4443cedd979a72cb68d4fc33760f8  severity_reconciler.py
-dbc2837aa7411ac70422ae441e7fd529ca63e52962c4d160f8ef34e1eef74888  reconciliation_challenge.py
+96a6a30a5086ad5368bb6410df32075d4c870867f3f60dfceea46d23ff0a7443  reconciliation_challenge.py
 7a0a6642403bca39ed8ac87e183d88e2265e879862189b494837b3d258131a79  severity_policy_gate.py
 ```
 
