@@ -510,6 +510,9 @@ class ReconciliationChallenge(gl.Contract):
         ch = self.challenges[advisory_id]
         if ch.status != "PENDING":
             raise Exception("NOT_PENDING")
+        now = now_seconds()
+        if now >= int(ch.resolution_deadline):
+            raise Exception("RESOLUTION_WINDOW_CLOSED")
         rv = parse_obj(gl.get_contract_at(Address(self.reconciler_addr)).view().get_reconciliation(advisory_id))
         if rv.get("exists") is not True:
             raise Exception("RECONCILIATION_NOT_FOUND")
@@ -518,7 +521,6 @@ class ReconciliationChallenge(gl.Contract):
         vid = str(rv["vuln_id"]).lower()
         orig_r = str(rv["reconciled"])
         orig_a = str(rv["agreement"])
-        now = now_seconds()
 
         def leader_fn():
             return judge_sources(urls, expected, vid)
